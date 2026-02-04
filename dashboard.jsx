@@ -84,7 +84,17 @@ const Dashboard = () => {
   };
 
   const currentData = data[activeGrade];
-  const COLORS = ['#2E5077', '#4DA1A9', '#79D7BE', '#D4E157', '#FFA726', '#EF5350', '#AB47BC', '#5C6BC0'];
+  const COLORS = ['#498AA8', '#2F6581', '#ABBDC6', '#545355', '#19171D'];
+  const UI = {
+    page: '#F3F8FA',
+    primary: '#498AA8',
+    primaryDeep: '#2F6581',
+    muted: '#ABBDC6',
+    ink: '#19171D',
+    inkSoft: '#545355',
+    card: '#FFFFFF',
+    border: 'rgba(43,71,83,0.12)'
+  };
 
   const genderData = Object.entries(currentData.gender).map(([name, value]) => ({
     name,
@@ -116,44 +126,41 @@ const Dashboard = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)',
+      background: UI.page,
       fontFamily: "'Cairo', 'Tajawal', sans-serif",
       direction: 'rtl',
-      padding: '2rem',
-      color: '#fff'
+      padding: '2.5rem',
+      color: UI.ink
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
       
       {/* Header */}
       <div style={{
-        background: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: '24px',
-        padding: '2.5rem',
+        background: UI.card,
+        borderRadius: '28px',
+        padding: '2.8rem',
         marginBottom: '2rem',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+        border: `1px solid ${UI.border}`,
+        boxShadow: '0 20px 50px rgba(25,23,29,0.08)'
       }}>
         <h1 style={{
-          fontSize: '3.5rem',
+          fontSize: '3.2rem',
           fontWeight: '900',
           margin: 0,
-          background: 'linear-gradient(135deg, #79D7BE 0%, #4DA1A9 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: UI.primaryDeep,
           textAlign: 'center',
-          letterSpacing: '1px'
+          letterSpacing: '0.5px'
         }}>
-          📊 لوحة إحصائيات الاختبارات
+          لوحة إحصائيات الاختبارات
         </h1>
         <p style={{
           textAlign: 'center',
-          fontSize: '1.3rem',
+          fontSize: '1.2rem',
           margin: '1rem 0 0 0',
-          color: '#B0BEC5',
+          color: UI.inkSoft,
           fontWeight: '500'
         }}>
-          تحليل شامل ودقيق لأداء الطلاب والطالبات
+          تحليل مبسّط ودقيق لأداء الطلاب والطالبات
         </p>
       </div>
 
@@ -170,19 +177,19 @@ const Dashboard = () => {
             padding: '1.2rem 3rem',
             fontSize: '1.4rem',
             fontWeight: '700',
-            border: 'none',
-            borderRadius: '16px',
+            border: `1px solid ${UI.border}`,
+            borderRadius: '18px',
             cursor: 'pointer',
             background: activeGrade === 'grade3' 
-              ? 'linear-gradient(135deg, #4DA1A9 0%, #2E5077 100%)'
-              : 'rgba(255,255,255,0.1)',
-            color: '#fff',
+              ? UI.primary
+              : UI.card,
+            color: activeGrade === 'grade3' ? '#fff' : UI.primaryDeep,
             transition: 'all 0.3s ease',
             fontFamily: 'inherit',
-            boxShadow: activeGrade === 'grade3' ? '0 10px 30px rgba(77,161,169,0.4)' : 'none',
+            boxShadow: activeGrade === 'grade3' ? '0 12px 24px rgba(73,138,168,0.25)' : 'none',
             transform: activeGrade === 'grade3' ? 'scale(1.05)' : 'scale(1)'
           }}>
-          📚 الصف الثالث الابتدائي
+          الصف الثالث الابتدائي
         </button>
         <button
           onClick={() => setActiveGrade('grade6')}
@@ -190,19 +197,19 @@ const Dashboard = () => {
             padding: '1.2rem 3rem',
             fontSize: '1.4rem',
             fontWeight: '700',
-            border: 'none',
-            borderRadius: '16px',
+            border: `1px solid ${UI.border}`,
+            borderRadius: '18px',
             cursor: 'pointer',
             background: activeGrade === 'grade6' 
-              ? 'linear-gradient(135deg, #4DA1A9 0%, #2E5077 100%)'
-              : 'rgba(255,255,255,0.1)',
-            color: '#fff',
+              ? UI.primary
+              : UI.card,
+            color: activeGrade === 'grade6' ? '#fff' : UI.primaryDeep,
             transition: 'all 0.3s ease',
             fontFamily: 'inherit',
-            boxShadow: activeGrade === 'grade6' ? '0 10px 30px rgba(77,161,169,0.4)' : 'none',
+            boxShadow: activeGrade === 'grade6' ? '0 12px 24px rgba(73,138,168,0.25)' : 'none',
             transform: activeGrade === 'grade6' ? 'scale(1.05)' : 'scale(1)'
           }}>
-          📖 الصف السادس الابتدائي
+          الصف السادس الابتدائي
         </button>
       </div>
 
@@ -214,30 +221,30 @@ const Dashboard = () => {
         marginBottom: '2rem'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #2E5077 0%, #4DA1A9 100%)',
-          borderRadius: '20px',
+          background: UI.card,
+          borderRadius: '22px',
           padding: '2rem',
-          boxShadow: '0 15px 40px rgba(46,80,119,0.4)',
-          border: '1px solid rgba(255,255,255,0.1)'
+          boxShadow: '0 12px 30px rgba(25,23,29,0.08)',
+          border: `1px solid ${UI.border}`
         }}>
-          <div style={{ fontSize: '1.1rem', color: '#B0E5F0', marginBottom: '0.5rem', fontWeight: '600' }}>👥 إجمالي المشاركين</div>
-          <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#fff' }}>{currentData.total_students}</div>
-          <div style={{ fontSize: '0.95rem', color: '#B0E5F0', marginTop: '0.5rem' }}>طالب وطالبة</div>
+          <div style={{ fontSize: '1.05rem', color: UI.inkSoft, marginBottom: '0.5rem', fontWeight: '600' }}>إجمالي المشاركين</div>
+          <div style={{ fontSize: '3.4rem', fontWeight: '900', color: UI.primaryDeep }}>{currentData.total_students}</div>
+          <div style={{ fontSize: '0.95rem', color: UI.inkSoft, marginTop: '0.5rem' }}>طالب وطالبة</div>
         </div>
 
         {Object.entries(currentData.gender).map(([gender, count], index) => (
           <div key={gender} style={{
-            background: `linear-gradient(135deg, ${COLORS[index]} 0%, ${COLORS[index + 1] || COLORS[0]} 100%)`,
-            borderRadius: '20px',
+            background: UI.card,
+            borderRadius: '22px',
             padding: '2rem',
-            boxShadow: `0 15px 40px ${COLORS[index]}40`,
-            border: '1px solid rgba(255,255,255,0.1)'
+            boxShadow: '0 12px 30px rgba(25,23,29,0.08)',
+            border: `1px solid ${UI.border}`
           }}>
-            <div style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', marginBottom: '0.5rem', fontWeight: '600' }}>
-              {gender === 'بنين' ? '👦' : gender === 'بنات' ? '👧' : '👶'} {gender}
+            <div style={{ fontSize: '1.05rem', color: UI.inkSoft, marginBottom: '0.5rem', fontWeight: '600' }}>
+              {gender}
             </div>
-            <div style={{ fontSize: '3rem', fontWeight: '900', color: '#fff' }}>{count}</div>
-            <div style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', marginTop: '0.5rem' }}>
+            <div style={{ fontSize: '3rem', fontWeight: '900', color: COLORS[index % COLORS.length] }}>{count}</div>
+            <div style={{ fontSize: '0.95rem', color: UI.inkSoft, marginTop: '0.5rem' }}>
               {((count / currentData.total_students) * 100).toFixed(1)}% من الإجمالي
             </div>
           </div>
@@ -252,15 +259,14 @@ const Dashboard = () => {
         marginBottom: '2rem'
       }}>
         <div style={{
-          background: 'rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(20px)',
+          background: UI.card,
           borderRadius: '24px',
           padding: '2rem',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+          border: `1px solid ${UI.border}`,
+          boxShadow: '0 18px 40px rgba(25,23,29,0.08)'
         }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem', color: '#79D7BE' }}>
-            📊 توزيع المشاركين حسب النوع
+          <h2 style={{ fontSize: '1.7rem', fontWeight: '700', marginBottom: '1.5rem', color: UI.primaryDeep }}>
+            توزيع المشاركين حسب النوع
           </h2>
           <ResponsiveContainer width="100%" height={350}>
             <PieChart>
@@ -280,10 +286,11 @@ const Dashboard = () => {
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  background: 'rgba(30,30,30,0.95)', 
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: '#fff', 
+                  border: `1px solid ${UI.border}`,
                   borderRadius: '12px',
-                  fontFamily: 'inherit'
+                  fontFamily: 'inherit',
+                  color: UI.ink
                 }}
               />
             </PieChart>
@@ -291,37 +298,37 @@ const Dashboard = () => {
         </div>
 
         <div style={{
-          background: 'rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(20px)',
+          background: UI.card,
           borderRadius: '24px',
           padding: '2rem',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+          border: `1px solid ${UI.border}`,
+          boxShadow: '0 18px 40px rgba(25,23,29,0.08)'
         }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem', color: '#79D7BE' }}>
-            🏫 توزيع المشاركين حسب القطاع
+          <h2 style={{ fontSize: '1.7rem', fontWeight: '700', marginBottom: '1.5rem', color: UI.primaryDeep }}>
+            توزيع المشاركين حسب القطاع
           </h2>
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={sectorData.slice(0, 8)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <CartesianGrid strokeDasharray="3 3" stroke={UI.border} />
               <XAxis 
                 dataKey="name" 
-                tick={{ fill: '#B0BEC5', fontSize: 12 }}
+                tick={{ fill: UI.inkSoft, fontSize: 12 }}
                 angle={-15}
                 textAnchor="end"
                 height={80}
               />
-              <YAxis tick={{ fill: '#B0BEC5' }} />
+              <YAxis tick={{ fill: UI.inkSoft }} />
               <Tooltip 
                 contentStyle={{ 
-                  background: 'rgba(30,30,30,0.95)', 
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: '#fff', 
+                  border: `1px solid ${UI.border}`,
                   borderRadius: '12px',
-                  fontFamily: 'inherit'
+                  fontFamily: 'inherit',
+                  color: UI.ink
                 }}
                 formatter={(value, name) => [`${value} (${((value / currentData.total_students) * 100).toFixed(1)}%)`, 'عدد الطلاب']}
               />
-              <Bar dataKey="value" fill="#4DA1A9" radius={[8, 8, 0, 0]}>
+              <Bar dataKey="value" fill={UI.primary} radius={[10, 10, 0, 0]}>
                 {sectorData.slice(0, 8).map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
@@ -333,38 +340,38 @@ const Dashboard = () => {
 
       {/* Sector by Gender Comparison */}
       <div style={{
-        background: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(20px)',
+        background: UI.card,
         borderRadius: '24px',
         padding: '2rem',
         marginBottom: '2rem',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+        border: `1px solid ${UI.border}`,
+        boxShadow: '0 18px 40px rgba(25,23,29,0.08)'
       }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem', color: '#79D7BE' }}>
-          📈 مقارنة المشاركين والمشاركات في كل قطاع
+        <h2 style={{ fontSize: '1.7rem', fontWeight: '700', marginBottom: '1.5rem', color: UI.primaryDeep }}>
+          مقارنة المشاركين والمشاركات في كل قطاع
         </h2>
         <ResponsiveContainer width="100%" height={450}>
           <BarChart data={sectorGenderData.slice(0, 8)}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke={UI.border} />
             <XAxis 
               dataKey="sector" 
-              tick={{ fill: '#B0BEC5', fontSize: 12 }}
+              tick={{ fill: UI.inkSoft, fontSize: 12 }}
               angle={-15}
               textAnchor="end"
               height={80}
             />
-            <YAxis tick={{ fill: '#B0BEC5' }} />
+            <YAxis tick={{ fill: UI.inkSoft }} />
             <Tooltip 
               contentStyle={{ 
-                background: 'rgba(30,30,30,0.95)', 
-                border: '1px solid rgba(255,255,255,0.2)',
+                background: '#fff', 
+                border: `1px solid ${UI.border}`,
                 borderRadius: '12px',
-                fontFamily: 'inherit'
+                fontFamily: 'inherit',
+                color: UI.ink
               }}
             />
             <Legend 
-              wrapperStyle={{ color: '#B0BEC5' }}
+              wrapperStyle={{ color: UI.inkSoft }}
               iconType="circle"
             />
             {Object.keys(currentData.sector_by_gender).map((gender, index) => (
@@ -372,7 +379,7 @@ const Dashboard = () => {
                 key={gender} 
                 dataKey={gender} 
                 fill={COLORS[index % COLORS.length]}
-                radius={[8, 8, 0, 0]}
+                radius={[10, 10, 0, 0]}
               />
             ))}
           </BarChart>
@@ -388,24 +395,23 @@ const Dashboard = () => {
       }}>
         {/* Top Questions */}
         <div style={{
-          background: 'rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(20px)',
+          background: UI.card,
           borderRadius: '24px',
           padding: '2rem',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+          border: `1px solid ${UI.border}`,
+          boxShadow: '0 18px 40px rgba(25,23,29,0.08)'
         }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem', color: '#79D7BE' }}>
-            ✅ الأسئلة الأكثر إجابة صحيحة
+          <h2 style={{ fontSize: '1.7rem', fontWeight: '700', marginBottom: '1.5rem', color: UI.primaryDeep }}>
+            الأسئلة الأعلى أداءً
           </h2>
           <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
             {topQuestions.map((q, index) => (
               <div key={index} style={{
-                background: 'rgba(121,215,190,0.1)',
+                background: '#F7FAFC',
                 borderRadius: '16px',
                 padding: '1.5rem',
                 marginBottom: '1rem',
-                border: '1px solid rgba(121,215,190,0.3)',
+                border: `1px solid ${UI.border}`,
                 transition: 'all 0.3s ease'
               }}>
                 <div style={{
@@ -415,7 +421,7 @@ const Dashboard = () => {
                   marginBottom: '0.8rem'
                 }}>
                   <span style={{
-                    background: 'linear-gradient(135deg, #79D7BE 0%, #4DA1A9 100%)',
+                    background: UI.primary,
                     color: '#fff',
                     padding: '0.5rem 1rem',
                     borderRadius: '12px',
@@ -427,8 +433,8 @@ const Dashboard = () => {
                     #{index + 1}
                   </span>
                   <span style={{
-                    background: 'rgba(121,215,190,0.2)',
-                    color: '#79D7BE',
+                    background: 'rgba(73,138,168,0.15)',
+                    color: UI.primaryDeep,
                     padding: '0.4rem 1.2rem',
                     borderRadius: '20px',
                     fontWeight: '700',
@@ -439,7 +445,7 @@ const Dashboard = () => {
                 </div>
                 <div style={{
                   fontSize: '1.05rem',
-                  color: '#E0E0E0',
+                  color: UI.ink,
                   lineHeight: '1.6',
                   marginBottom: '0.8rem'
                 }}>
@@ -449,14 +455,14 @@ const Dashboard = () => {
                   display: 'flex',
                   gap: '1rem',
                   fontSize: '0.95rem',
-                  color: '#B0BEC5'
+                  color: UI.inkSoft
                 }}>
                   <span>✓ إجابات صحيحة: {q.correct}</span>
                   <span>• إجمالي: {q.total}</span>
                 </div>
                 <div style={{
                   marginTop: '0.8rem',
-                  background: 'rgba(255,255,255,0.05)',
+                  background: 'rgba(171,189,198,0.35)',
                   borderRadius: '10px',
                   overflow: 'hidden',
                   height: '8px'
@@ -464,7 +470,7 @@ const Dashboard = () => {
                   <div style={{
                     width: `${q.percentage}%`,
                     height: '100%',
-                    background: 'linear-gradient(90deg, #79D7BE 0%, #4DA1A9 100%)',
+                    background: `linear-gradient(90deg, ${UI.primary} 0%, ${UI.primaryDeep} 100%)`,
                     transition: 'width 0.5s ease'
                   }} />
                 </div>
@@ -475,24 +481,23 @@ const Dashboard = () => {
 
         {/* Bottom Questions */}
         <div style={{
-          background: 'rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(20px)',
+          background: UI.card,
           borderRadius: '24px',
           padding: '2rem',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)'
+          border: `1px solid ${UI.border}`,
+          boxShadow: '0 18px 40px rgba(25,23,29,0.08)'
         }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '1.5rem', color: '#EF5350' }}>
-            ⚠️ الأسئلة الأقل إجابة صحيحة
+          <h2 style={{ fontSize: '1.7rem', fontWeight: '700', marginBottom: '1.5rem', color: UI.ink }}>
+            الأسئلة الأقل أداءً
           </h2>
           <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
             {bottomQuestions.map((q, index) => (
               <div key={index} style={{
-                background: 'rgba(239,83,80,0.1)',
+                background: '#F8F5F6',
                 borderRadius: '16px',
                 padding: '1.5rem',
                 marginBottom: '1rem',
-                border: '1px solid rgba(239,83,80,0.3)',
+                border: `1px solid ${UI.border}`,
                 transition: 'all 0.3s ease'
               }}>
                 <div style={{
@@ -502,7 +507,7 @@ const Dashboard = () => {
                   marginBottom: '0.8rem'
                 }}>
                   <span style={{
-                    background: 'linear-gradient(135deg, #EF5350 0%, #E53935 100%)',
+                    background: UI.inkSoft,
                     color: '#fff',
                     padding: '0.5rem 1rem',
                     borderRadius: '12px',
@@ -514,8 +519,8 @@ const Dashboard = () => {
                     #{index + 1}
                   </span>
                   <span style={{
-                    background: 'rgba(239,83,80,0.2)',
-                    color: '#EF5350',
+                    background: 'rgba(84,83,85,0.15)',
+                    color: UI.inkSoft,
                     padding: '0.4rem 1.2rem',
                     borderRadius: '20px',
                     fontWeight: '700',
@@ -526,7 +531,7 @@ const Dashboard = () => {
                 </div>
                 <div style={{
                   fontSize: '1.05rem',
-                  color: '#E0E0E0',
+                  color: UI.ink,
                   lineHeight: '1.6',
                   marginBottom: '0.8rem'
                 }}>
@@ -536,14 +541,14 @@ const Dashboard = () => {
                   display: 'flex',
                   gap: '1rem',
                   fontSize: '0.95rem',
-                  color: '#B0BEC5'
+                  color: UI.inkSoft
                 }}>
                   <span>✓ إجابات صحيحة: {q.correct}</span>
                   <span>• إجمالي: {q.total}</span>
                 </div>
                 <div style={{
                   marginTop: '0.8rem',
-                  background: 'rgba(255,255,255,0.05)',
+                  background: 'rgba(171,189,198,0.35)',
                   borderRadius: '10px',
                   overflow: 'hidden',
                   height: '8px'
@@ -551,7 +556,7 @@ const Dashboard = () => {
                   <div style={{
                     width: `${q.percentage}%`,
                     height: '100%',
-                    background: 'linear-gradient(90deg, #EF5350 0%, #E53935 100%)',
+                    background: `linear-gradient(90deg, ${UI.inkSoft} 0%, ${UI.ink} 100%)`,
                     transition: 'width 0.5s ease'
                   }} />
                 </div>
@@ -563,16 +568,16 @@ const Dashboard = () => {
 
       {/* Footer */}
       <div style={{
-        background: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(20px)',
+        background: UI.card,
         borderRadius: '24px',
         padding: '1.5rem',
         textAlign: 'center',
-        border: '1px solid rgba(255,255,255,0.1)',
-        marginTop: '2rem'
+        border: `1px solid ${UI.border}`,
+        marginTop: '2rem',
+        boxShadow: '0 12px 30px rgba(25,23,29,0.08)'
       }}>
-        <p style={{ margin: 0, color: '#B0BEC5', fontSize: '1.1rem' }}>
-          📅 تم إنشاء هذه اللوحة بناءً على البيانات الفعلية من الملفات المرفقة • جميع الإحصائيات دقيقة ومحدثة
+        <p style={{ margin: 0, color: UI.inkSoft, fontSize: '1.1rem' }}>
+          تم إنشاء هذه اللوحة بناءً على البيانات الفعلية من الملفات المرفقة • جميع الإحصائيات دقيقة ومحدثة
         </p>
       </div>
     </div>
