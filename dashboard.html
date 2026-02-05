@@ -32,8 +32,8 @@
         .pill { background: rgba(73,138,168,0.12); color: #2F6581; padding: 0.3rem 0.8rem; border-radius: 12px; font-weight: 700; }
         .option-list { display: grid; gap: 0.8rem; }
         .option-item { background: #fff; border-radius: 14px; padding: 0.9rem; border: 1px solid rgba(43,71,83,0.12); }
-        .option-item.correct-option { background: #DCEFD6; border: 1px solid #8EBB84; box-shadow: 0 0 0 1px rgba(142,187,132,0.25); }
-        .correct-badge { background: #6FA761; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 999px; }
+        .option-item.correct-option { background: #DFF2CB; border: 1px solid #9BC883; box-shadow: 0 0 0 1px rgba(155,200,131,0.28); }
+        .correct-badge { background: #79AF63; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 999px; }
         .option-header { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
         .option-answer { font-weight: 700; color: #19171D; }
         .option-stats { font-size: 0.9rem; color: #545355; }
@@ -95,6 +95,8 @@ let currentSubject=subjectKeys[0];
 let charts={};
 
 const CORRECT_ANSWERS_BY_SUBJECT={
+    "اللغة العربية - الصف الثالث الابتدائي":["الأرنب","اكتشاف الأب خدعةَ الثعلب","الَحَذَرِ أدّى إلى النجاة","الحذر والذكاء في مواجهة الخطر","ضمَّ يديه","اقتراب الأرنب ← تظاهر الثعلب بالموت ← هروب الأرنب","هروبه عندما فتح الثعلب فاه","والد الأرانب","ادّعى","تصرّفه خاطئ لأنه خداع"],
+    "الرياضيات - الصف الثالث الابتدائي":["٨٠٠٠","٦ + ٠ = ٦","(٢ + ٥) + ٣ = ٢ + (٥ + ٣)","٢٦٥","٣١","٣٠٠","٦","60","١٨ + ١٦ + ١٩","٥٩٠"],
     "اللغة العربية - الصف الثالث المتوسط":["التطور.","كل ما تحتويه المكتبة","العودة","ترادف","المكتبات","مختومة بتاء التأنيث","اسم فاعل","1970 - 1979","المكتباتُ","أفعال ناسخة"],
     "الرياضيات - الصف الثالث المتوسط":["54 متر مربع تقريبا","ب","د","أ","أ","ب","ب","ج","أ","١٩٠٠"],
     "العلوم - الصف الثالث المتوسط":["يتحرك لليسار","رسوبي","متماثل جانبيا","الدرج جـ","الشعر","(2) تخلخل (1) - تضاغط","الزلازل","النقل النشط","الاستوائي","٣ الى ١٢"]
