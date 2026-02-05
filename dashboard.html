@@ -32,6 +32,8 @@
         .pill { background: rgba(73,138,168,0.12); color: #2F6581; padding: 0.3rem 0.8rem; border-radius: 12px; font-weight: 700; }
         .option-list { display: grid; gap: 0.8rem; }
         .option-item { background: #fff; border-radius: 14px; padding: 0.9rem; border: 1px solid rgba(43,71,83,0.12); }
+        .option-item.correct-option { background: #DCEFD6; border: 1px solid #8EBB84; box-shadow: 0 0 0 1px rgba(142,187,132,0.25); }
+        .correct-badge { background: #6FA761; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 999px; }
         .option-header { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
         .option-answer { font-weight: 700; color: #19171D; }
         .option-stats { font-size: 0.9rem; color: #545355; }
@@ -91,6 +93,12 @@ const COLORS=['#498AA8','#2F6581','#ABBDC6','#545355','#19171D','#7BAFD4','#95A5
 const subjectKeys=Object.keys(data);
 let currentSubject=subjectKeys[0];
 let charts={};
+
+const CORRECT_ANSWERS_BY_SUBJECT={
+    "اللغة العربية - الصف الثالث المتوسط":["التطور.","كل ما تحتويه المكتبة","العودة","ترادف","المكتبات","مختومة بتاء التأنيث","اسم فاعل","1970 - 1979","المكتباتُ","أفعال ناسخة"],
+    "الرياضيات - الصف الثالث المتوسط":["54 متر مربع تقريبا","ب","د","أ","أ","ب","ب","ج","أ","١٩٠٠"],
+    "العلوم - الصف الثالث المتوسط":["يتحرك لليسار","رسوبي","متماثل جانبيا","الدرج جـ","الشعر","(2) تخلخل (1) - تضاغط","الزلازل","النقل النشط","الاستوائي","٣ الى ١٢"]
+};
 
 function populateSubjects(){
     const select=document.getElementById('subjectSelect');
@@ -193,17 +201,19 @@ function renderQuestions(){
             .slice(0,8)
             .map(([name,percent])=>`<span class="sector-tag">${name}: ${percent}%</span>`)
             .join('');
+        const correctAnswer=(CORRECT_ANSWERS_BY_SUBJECT[currentSubject] || [])[index];
         const options=q.options.map(option=>{
+            const isCorrect=correctAnswer && option.answer === correctAnswer;
             const sectorTags=Object.entries(option.sector_percent || {})
                 .sort((a,b)=>b[1]-a[1])
                 .slice(0,8)
                 .map(([name,percent])=>`<span class="sector-tag">${name}: ${percent}%</span>`)
                 .join('');
             return `
-                <div class="option-item">
+                <div class="option-item ${isCorrect ? 'correct-option' : ''}">
                     <div class="option-header">
                         <div class="option-answer">${option.answer}</div>
-                        <div class="option-stats">${option.count} إجابة • ${option.percentage}%</div>
+                        <div class="option-stats">${option.count} إجابة • ${option.percentage}% ${isCorrect ? '<span class="correct-badge">الإجابة الصحيحة</span>' : ''}</div>
                     </div>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${option.percentage}%"></div></div>
                     <details>
