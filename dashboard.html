@@ -71,6 +71,7 @@
         .sector-tag { background: rgba(84,83,85,0.08); padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.85rem; color: #545355; }
         .footer { background: #fff; border-radius: 24px; padding: 1.5rem; text-align: center; border: 1px solid rgba(43,71,83,0.12); margin-top: 2rem; box-shadow: 0 12px 30px rgba(25,23,29,0.08); }
         .footer p { margin: 0; color: #545355; font-size: 1rem; }
+        .visit-counter { color: inherit; font-size: inherit; }
         @media (max-width: 1024px) {
             h1 { font-size: 1.75rem; }
             .header-logo { width: 200px; }
@@ -122,7 +123,10 @@
         </div>
 
         <div class="footer">
-            <p>تم إنشاء هذه اللوحة بناءً على البيانات الفعلية من الملفات المرفقة • جميع الإحصائيات دقيقة ومحدثة</p>
+            <p>
+                تم إنشاء هذه اللوحة بناءً على البيانات الفعلية من الملفات المرفقة • جميع الإحصائيات دقيقة ومحدثة
+                <span class="visit-counter">• عدد الزيارات: <span id="visitCounter">0</span></span>
+            </p>
         </div>
     </div>
 
@@ -374,7 +378,18 @@ function updateDashboard(){
     renderQuestions();
 }
 
+function updateVisitCounter(){
+    const counterElement=document.getElementById('visitCounter');
+    if(!counterElement) return;
+    const storageKey='dashboardPageVisits';
+    const currentValue=Number.parseInt(localStorage.getItem(storageKey) || '0', 10);
+    const visits=Number.isFinite(currentValue) ? currentValue + 1 : 1;
+    localStorage.setItem(storageKey, String(visits));
+    counterElement.textContent=visits.toLocaleString('ar-SA');
+}
+
 window.addEventListener('load', () => {
+    updateVisitCounter();
     populateSubjects();
     updateDashboard();
 });
