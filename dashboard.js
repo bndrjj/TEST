@@ -730,7 +730,7 @@ const Dashboard = () => {
           textAlign: 'center',
           letterSpacing: '0.5px'
         }}>
-          لوحة إحصائيات الاختبارات
+          لوحة إحصائيات الاختبارات التشخيصي (التحصيلي)
         </h1>
         <p style={{
           textAlign: 'center',
