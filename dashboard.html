@@ -92,6 +92,28 @@
             h2 { font-size: 1.4rem; }
             body { font-size: 0.95rem; }
         }
+
+        .kpi-skeleton { background: linear-gradient(90deg, #eef2f5 25%, #dde6ec 37%, #eef2f5 63%); background-size: 400% 100%; animation: pulse 1.4s ease infinite; min-height: 130px; }
+        @keyframes pulse { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        .section-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .quality-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 0.8rem; }
+        .quality-item { background:#F8FCFE; border:1px solid rgba(43,71,83,0.12); border-radius:12px; padding:0.75rem; text-align:center; }
+        .quality-count { font-family:'Cairo',sans-serif; font-size:1.5rem; color:#2F6581; }
+        .info-note { background:#F8FCFE; border:1px solid rgba(43,71,83,0.12); border-radius:14px; padding:0.9rem; color:#545355; margin-top:0.9rem; }
+        .table-wrap { overflow:auto; border:1px solid rgba(43,71,83,0.12); border-radius:14px; }
+        table { width:100%; border-collapse:collapse; min-width:780px; }
+        th,td { padding:0.7rem; border-bottom:1px solid rgba(43,71,83,0.08); text-align:right; }
+        th { background:#F8FCFE; cursor:pointer; font-family:'Cairo',sans-serif; }
+        .chip { display:inline-block; padding:0.2rem 0.5rem; border-radius:20px; background:rgba(73,138,168,0.16); color:#2F6581; font-size:0.82rem; }
+        .heatmap-grid { display:grid; gap:0.65rem; }
+        .heat-row { display:grid; grid-template-columns: 140px repeat(3,minmax(110px,1fr)); gap:0.55rem; }
+        .heat-label { font-weight:700; color:#545355; align-self:center; }
+        .heat-cell { border:none; border-radius:10px; padding:0.65rem; color:#fff; cursor:pointer; font-weight:700; }
+        .heat-cell.active { outline:3px solid #19171D; }
+        .distractor-bars { display:grid; gap:0.35rem; margin-top:0.45rem; }
+        .d-bar { height:10px; border-radius:99px; background:#E9EFF3; overflow:hidden; }
+        .d-bar > span { display:block; height:100%; background:#4AA8C7; }
+
         @media (max-width: 768px) {
             h1 { font-size: 1.35rem; }
             .header { padding: 1.1rem 1rem; }
@@ -120,6 +142,20 @@
 
         <div class="cards-grid" id="summaryCards"></div>
 
+        <div class="chart-card" style="margin-bottom: 2rem;">
+            <h2 class="chart-title">لوحة جودة البيانات</h2>
+            <div class="quality-grid" id="dataQualityPanel"></div>
+            <div class="info-note" id="dataQualityNotes"></div>
+        </div>
+
+        <div class="section-grid">
+            <div class="chart-card">
+                <h2 class="chart-title">Heatmap الأداء (المادة × الصف)</h2>
+                <div id="heatmapContainer"></div>
+                <div class="info-note">عند الضغط على أي خلية يتم تطبيق التصفية على بقية اللوحة تلقائياً.</div>
+            </div>
+        </div>
+
         <div class="charts-row">
             <div class="chart-card">
                 <h2 class="chart-title">توزيع المشاركين حسب النوع</h2>
@@ -134,6 +170,22 @@
         <div class="chart-card" style="margin-bottom: 2rem;">
             <h2 class="chart-title">إحصائية الاجابات الصحيحة</h2>
             <div class="correct-stats-grid" id="correctStatsGrid"></div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom: 2rem;">
+            <h2 class="chart-title">تحليل الأسئلة (Item Analysis)</h2>
+            <div class="table-wrap"><table id="itemAnalysisTable"></table></div>
+            <div class="info-note" id="itemAnalysisNote"></div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom: 2rem;">
+            <h2 class="chart-title">موثوقية الاختبار (Cronbach's Alpha)</h2>
+            <div id="reliabilityContainer"></div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom: 2rem;">
+            <h2 class="chart-title">الدلالة الإحصائية</h2>
+            <div id="inferenceContainer"></div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 2rem;">
@@ -256,38 +308,109 @@ const CORRECT_ANSWERS_BY_SUBJECT={
     ]
 };
 
+
+const unifiedModel = buildUnifiedModel(data);
+let activeHeatFilter = null;
+let itemSort = { key: 'p', asc: true };
+
+function parseSubjectGrade(label){
+    const parts = label.split(' - ');
+    return { subject: parts[0] || label, grade: parts[1] || 'غير محدد' };
+}
+
+function buildUnifiedModel(raw){
+    const dimensions = { subjects: [], grades: [], sectors: new Set(), genders: new Set() };
+    const facts = [];
+    Object.entries(raw).forEach(([label, payload]) => {
+        const d = parseSubjectGrade(label);
+        dimensions.subjects.push(d.subject);
+        dimensions.grades.push(d.grade);
+        Object.keys(payload.sector_counts || {}).forEach(x=>dimensions.sectors.add(x));
+        Object.keys(payload.gender_counts || {}).forEach(x=>dimensions.genders.add(x));
+        (payload.questions || []).forEach((q, idx) => {
+            const options = q.options || [];
+            const correctAnswer = (CORRECT_ANSWERS_BY_SUBJECT[label] || [])[idx];
+            const correctOption = options.find(o => o.answer === correctAnswer);
+            facts.push({
+                label, subject:d.subject, grade:d.grade, questionIndex: idx + 1, question: q.question,
+                participants: Number(q.total || payload.total_students || 0),
+                optionsCount: options.length,
+                correctAnswer,
+                p: Number(correctOption?.percentage || 0),
+                options
+            });
+        });
+    });
+    return { facts, dimensions: { ...dimensions, sectors: Array.from(dimensions.sectors), genders: Array.from(dimensions.genders) } };
+}
+
+function validateDataModel(model){
+    let missing=0, duplicates=0, inconsistent=0, outOfRange=0;
+    const seen = new Set();
+    model.facts.forEach(f=>{
+        if(!f.question || !f.participants) missing++;
+        const key = `${f.label}::${f.question}`;
+        if(seen.has(key)) duplicates++;
+        seen.add(key);
+        const sum = f.options.reduce((a,o)=>a+Number(o.percentage||0),0);
+        if(f.options.length && Math.abs(sum-100)>1.5) inconsistent++;
+        if(f.p<0 || f.p>100) outOfRange++;
+    });
+    return {missing, duplicates, inconsistent, outOfRange, warnings: missing+inconsistent, errors: duplicates+outOfRange};
+}
+
+function applySubjectFilter(facts){
+    const base = facts.filter(f => f.label === currentSubject);
+    if(!activeHeatFilter) return base;
+    if(activeHeatFilter.subject && activeHeatFilter.subject !== parseSubjectGrade(currentSubject).subject) return [];
+    if(activeHeatFilter.grade && activeHeatFilter.grade !== parseSubjectGrade(currentSubject).grade) return [];
+    return base;
+}
+
 function populateSubjects(){
     const select=document.getElementById('subjectSelect');
     select.innerHTML='';
-    subjectKeys.forEach(key=>{
-        const option=document.createElement('option');
-        option.value=key;
-        option.textContent=key;
-        select.appendChild(option);
-    });
+    subjectKeys.forEach(key=>{ const option=document.createElement('option'); option.value=key; option.textContent=key; select.appendChild(option); });
     select.value=currentSubject;
-    select.addEventListener('change', (event)=>{
-        currentSubject=event.target.value;
-        updateDashboard();
-    });
+    select.addEventListener('change', (event)=>{ currentSubject=event.target.value; updateDashboard(true); });
 }
 
-function renderSummaryCards(){
+function renderSummaryCards(isLoading=false){
     const currentData=data[currentSubject];
     const container=document.getElementById('summaryCards');
-    const genderEntries=Object.entries(currentData.gender_counts || {});
-    const sectorEntries=Object.entries(currentData.sector_counts || {});
-    let html=`<div class="card"><div class="card-label">إجمالي المشاركين</div><div class="card-value">${currentData.total_students}</div><div class="card-subtitle">طالب وطالبة</div></div>`;
-    html+=`<div class="card"><div class="card-label">عدد الأسئلة</div><div class="card-value">${currentData.questions.length}</div><div class="card-subtitle">حسب المادة المختارة</div></div>`;
-    genderEntries.forEach(([gender,count],index)=>{
-        const percentage=((count/currentData.total_students)*100).toFixed(1);
-        html+=`<div class="card"><div class="card-label">${gender}</div><div class="card-value" style="color:${COLORS[index % COLORS.length]}">${count}</div><div class="card-subtitle">${percentage}% من الإجمالي</div></div>`;
-    });
-    if(!genderEntries.length){
-        html+=`<div class="card"><div class="card-label">النوع</div><div class="card-subtitle">لا توجد بيانات للنوع في هذه المادة</div></div>`;
+    if(isLoading){
+        container.innerHTML = new Array(6).fill('<div class="card kpi-skeleton"></div>').join('');
+        return;
     }
-    html+=`<div class="card"><div class="card-label">عدد القطاعات</div><div class="card-value">${sectorEntries.length}</div><div class="card-subtitle">قطاعات مشاركة</div></div>`;
-    container.innerHTML=html;
+    const facts = applySubjectFilter(unifiedModel.facts);
+    const pValues = facts.map(f=>f.p).filter(v=>Number.isFinite(v));
+    const sorted=[...pValues].sort((a,b)=>a-b);
+    const mean = pValues.length ? pValues.reduce((a,b)=>a+b,0)/pValues.length : 0;
+    const median = sorted.length ? (sorted[Math.floor((sorted.length-1)/2)] + sorted[Math.ceil((sorted.length-1)/2)]) / 2 : 0;
+    const std = pValues.length ? Math.sqrt(pValues.reduce((a,v)=>a+Math.pow(v-mean,2),0)/pValues.length) : 0;
+    const best = facts.reduce((m,f)=>f.p>m.p?f:m,{p:-1,question:'-'});
+    const worst = facts.reduce((m,f)=>f.p<m.p?f:m,{p:999,question:'-'});
+    const cards=[
+        ['عدد المشاركين', currentData.total_students, 'طالب/طالبة'],
+        ['متوسط الدرجة/النسبة', `${mean.toFixed(1)}%`, 'حسب الأسئلة المتاحة'],
+        ['الوسيط (Median)', `${median.toFixed(1)}%`, 'مركز التوزيع'],
+        ['الانحراف المعياري (Std Dev)', std.toFixed(2), 'تشتت الأداء'],
+        ['أعلى/أدنى أداء', `${best.p.toFixed(1)}% / ${worst.p.toFixed(1)}%`, 'أفضل/أضعف سؤال'],
+        ['عدد الأسئلة', facts.length, 'ضمن التصفية الحالية']
+    ];
+    container.innerHTML = cards.map(([l,v,s])=>`<div class="card"><div class="card-label">${l}</div><div class="card-value">${v}</div><div class="card-subtitle">${s}</div></div>`).join('');
+}
+
+function renderDataQualityPanel(){
+    const q = validateDataModel(unifiedModel);
+    document.getElementById('dataQualityPanel').innerHTML = `
+    <div class="quality-item"><div>الأخطاء</div><div class="quality-count">${q.errors}</div></div>
+    <div class="quality-item"><div>التحذيرات</div><div class="quality-count">${q.warnings}</div></div>
+    <div class="quality-item"><div>Missing Values</div><div class="quality-count">${q.missing}</div></div>
+    <div class="quality-item"><div>Duplicates</div><div class="quality-count">${q.duplicates}</div></div>
+    <div class="quality-item"><div>Inconsistent Labels</div><div class="quality-count">${q.inconsistent}</div></div>
+    <div class="quality-item"><div>Out-of-range</div><div class="quality-count">${q.outOfRange}</div></div>`;
+    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدة (facts + dimensions) وعرض مؤشرات الجودة بشكل لحظي.';
 }
 
 function renderGenderChart(){
@@ -486,6 +609,87 @@ function updateVisitCounter(){
     const visits=Number.isFinite(currentValue) ? currentValue + 1 : 1;
     localStorage.setItem(storageKey, String(visits));
     counterElement.textContent=visits.toLocaleString('ar-SA');
+}
+
+
+function estimateDiscrimination(question, qIdx){
+    const correctAnswer=(CORRECT_ANSWERS_BY_SUBJECT[currentSubject] || [])[qIdx];
+    const correctOption=(question.options||[]).find(o=>o.answer===correctAnswer);
+    if(!correctOption) return { method:'غير متاح', value:null };
+    const sectorRates = Object.entries(question.sector_percent || {}).map(([sector, pct])=>{
+        const total=(question.total||0)*(pct/100);
+        const correct=(correctOption.count||0)*(((correctOption.sector_percent||{})[sector]||0)/100);
+        return { sector, total, rate: total? (correct/total)*100 : 0 };
+    }).filter(x=>x.total>0).sort((a,b)=>b.rate-a.rate);
+    if(sectorRates.length<4) return { method:'غير متاح', value:null };
+    const take=Math.max(1,Math.floor(sectorRates.length*0.27));
+    const top=sectorRates.slice(0,take); const low=sectorRates.slice(-take);
+    const topMean=top.reduce((a,b)=>a+b.rate,0)/top.length;
+    const lowMean=low.reduce((a,b)=>a+b.rate,0)/low.length;
+    return { method:'D-index 27%', value:(topMean-lowMean)/100 };
+}
+
+function renderItemAnalysis(){
+    const table=document.getElementById('itemAnalysisTable');
+    const note=document.getElementById('itemAnalysisNote');
+    const currentData=data[currentSubject];
+    const rows=(currentData.questions||[]).map((q,idx)=>{
+        const p=((q.options||[]).find(o=>o.answer===(CORRECT_ANSWERS_BY_SUBJECT[currentSubject]||[])[idx])?.percentage)||0;
+        const d=estimateDiscrimination(q,idx);
+        const flag = p<30 ? 'صعب جدًا' : p>90 ? 'سهل جدًا' : (d.value!==null && d.value<0.2 ? 'تمييز ضعيف' : 'مقبول');
+        return {idx:idx+1, question:q.question, p, dValue:d.value, dMethod:d.method, flag, options:q.options||[]};
+    });
+    rows.sort((a,b)=>{
+        const av = itemSort.key==='dValue' ? (a.dValue ?? -999) : a[itemSort.key];
+        const bv = itemSort.key==='dValue' ? (b.dValue ?? -999) : b[itemSort.key];
+        return itemSort.asc ? av-bv : bv-av;
+    });
+    table.innerHTML=`<thead><tr>
+    <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>Distractors</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.idx}</td><td>${r.question}</td><td>${r.p.toFixed(1)}%</td><td>${r.dValue===null?'—':r.dValue.toFixed(2)}</td><td>${r.dMethod}</td><td><span class="chip">${r.flag}</span></td><td><div class="distractor-bars">${r.options.slice(0,4).map(o=>`<div>${o.answer} (${o.percentage}%)<div class="d-bar"><span style="width:${o.percentage}%"></span></div></div>`).join('')}</div></td></tr>`).join('')}</tbody>`;
+    table.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; itemSort={key:k,asc:itemSort.key===k?!itemSort.asc:true}; renderItemAnalysis(); });
+    const noPB = 'لا تتوفر بيانات كافية لحساب point-biserial: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
+    note.textContent = `${noPB} تم استخدام Discrimination Index (أعلى/أدنى 27%) كتقدير بديل عند توفر التوزيعات.`;
+}
+
+function renderReliability(){
+    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحساب Cronbach's Alpha. المطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
+}
+
+function renderInference(){
+    const container=document.getElementById('inferenceContainer');
+    const currentData=data[currentSubject];
+    const n=currentData.total_students||0;
+    const small=n<30;
+    container.innerHTML=`
+        <div class="info-note">مقارنة النوع (t-test + Cohen's d): لا تتوفر بيانات درجات رقمية فردية حسب النوع، لذلك لا يمكن إجراء الاختبار بدقة.</div>
+        <div class="info-note">مقارنة القطاعات (ANOVA + eta-squared): متاح تقدير وصفي فقط اعتماداً على نسب القطاعات داخل الأسئلة وليس درجات أفراد.</div>
+        ${small?'<div class="info-note">تحذير: حجم العينة صغير وقد يضعف الدلالة الإحصائية.</div>':''}`;
+}
+
+function renderHeatmap(){
+    const c=document.getElementById('heatmapContainer');
+    const labels=Object.keys(data);
+    const dim={};
+    labels.forEach(l=>{ const p=parseSubjectGrade(l); (dim[p.subject]??={}); const facts=unifiedModel.facts.filter(f=>f.label===l); dim[p.subject][p.grade]=facts.length?facts.reduce((a,b)=>a+b.p,0)/facts.length:0; });
+    const grades=[...new Set(Object.values(dim).flatMap(x=>Object.keys(x)))];
+    const getColor=v=>`hsl(${180-(v*1.2)},55%,45%)`;
+    c.innerHTML='<div class="heatmap-grid">'+Object.entries(dim).map(([subject,row])=>`<div class="heat-row"><div class="heat-label">${subject}</div>${grades.map(g=>{ const v=row[g]??0; const active=activeHeatFilter && activeHeatFilter.subject===subject && activeHeatFilter.grade===g; return `<button class="heat-cell ${active?'active':''}" style="background:${getColor(v)}" data-subject="${subject}" data-grade="${g}">${g}<br>${v.toFixed(1)}%</button>`; }).join('')}</div>`).join('')+'</div>';
+    c.querySelectorAll('.heat-cell').forEach(btn=>btn.onclick=()=>{ const same = activeHeatFilter && activeHeatFilter.subject===btn.dataset.subject && activeHeatFilter.grade===btn.dataset.grade; activeHeatFilter = same ? null : {subject:btn.dataset.subject,grade:btn.dataset.grade}; updateDashboard(); });
+}
+
+function updateDashboard(withLoader=false){
+    if(withLoader){ renderSummaryCards(true); setTimeout(()=>updateDashboard(false),350); return; }
+    renderSummaryCards(false);
+    renderDataQualityPanel();
+    renderHeatmap();
+    renderGenderChart();
+    renderSectorChart();
+    renderCorrectStats();
+    renderItemAnalysis();
+    renderReliability();
+    renderInference();
+    renderQuestions();
 }
 
 window.addEventListener('load', () => {
