@@ -150,7 +150,7 @@
 
         <div class="section-grid">
             <div class="chart-card">
-                <h2 class="chart-title">Heatmap الأداء (المادة × الصف)</h2>
+                <h2 class="chart-title">الأداء (المادة × الصف)</h2>
                 <div id="heatmapContainer"></div>
                 <div class="info-note">عند الضغط على أي خلية يتم تطبيق التصفية على بقية اللوحة تلقائياً.</div>
             </div>
@@ -173,7 +173,7 @@
         </div>
 
         <div class="chart-card" style="margin-bottom: 2rem;">
-            <h2 class="chart-title">تحليل الأسئلة (Item Analysis)</h2>
+            <h2 class="chart-title">تحليل الأسئلة</h2>
             <div class="table-wrap"><table id="itemAnalysisTable"></table></div>
             <div class="info-note" id="itemAnalysisNote"></div>
         </div>
@@ -393,8 +393,8 @@ function renderSummaryCards(isLoading=false){
     const cards=[
         ['عدد المشاركين', currentData.total_students, 'طالب/طالبة'],
         ['متوسط الدرجة/النسبة', `${mean.toFixed(1)}%`, 'حسب الأسئلة المتاحة'],
-        ['الوسيط (Median)', `${median.toFixed(1)}%`, 'مركز التوزيع'],
-        ['الانحراف المعياري (Std Dev)', std.toFixed(2), 'تشتت الأداء'],
+        ['الوسيط', `${median.toFixed(1)}%`, 'مركز التوزيع'],
+        ['الانحراف المعياري', std.toFixed(2), 'تشتت الأداء'],
         ['أعلى/أدنى أداء', `${best.p.toFixed(1)}% / ${worst.p.toFixed(1)}%`, 'أفضل/أضعف سؤال'],
         ['عدد الأسئلة', facts.length, 'ضمن التصفية الحالية']
     ];
@@ -626,7 +626,7 @@ function estimateDiscrimination(question, qIdx){
     const top=sectorRates.slice(0,take); const low=sectorRates.slice(-take);
     const topMean=top.reduce((a,b)=>a+b.rate,0)/top.length;
     const lowMean=low.reduce((a,b)=>a+b.rate,0)/low.length;
-    return { method:'D-index 27%', value:(topMean-lowMean)/100 };
+    return { method:' 27%', value:(topMean-lowMean)/100 };
 }
 
 function renderItemAnalysis(){
@@ -645,7 +645,7 @@ function renderItemAnalysis(){
         return itemSort.asc ? av-bv : bv-av;
     });
     table.innerHTML=`<thead><tr>
-    <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>Distractors</th></tr></thead>
+    <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>المشتتات</th></tr></thead>
     <tbody>${rows.map(r=>`<tr><td>${r.idx}</td><td>${r.question}</td><td>${r.p.toFixed(1)}%</td><td>${r.dValue===null?'—':r.dValue.toFixed(2)}</td><td>${r.dMethod}</td><td><span class="chip">${r.flag}</span></td><td><div class="distractor-bars">${r.options.slice(0,4).map(o=>`<div>${o.answer} (${o.percentage}%)<div class="d-bar"><span style="width:${o.percentage}%"></span></div></div>`).join('')}</div></td></tr>`).join('')}</tbody>`;
     table.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; itemSort={key:k,asc:itemSort.key===k?!itemSort.asc:true}; renderItemAnalysis(); });
     const noPB = 'لا تتوفر بيانات كافية لحساب point-biserial: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
