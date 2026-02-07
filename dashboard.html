@@ -173,13 +173,13 @@
         </div>
 
         <div class="chart-card" style="margin-bottom: 2rem;">
-            <h2 class="chart-title">تحليل الأسئلة (Item Analysis)</h2>
+            <h2 class="chart-title">تحليل الأسئلة</h2>
             <div class="table-wrap"><table id="itemAnalysisTable"></table></div>
             <div class="info-note" id="itemAnalysisNote"></div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 2rem;">
-            <h2 class="chart-title">موثوقية الاختبار (Cronbach's Alpha)</h2>
+            <h2 class="chart-title">موثوقية الاختبار</h2>
             <div id="reliabilityContainer"></div>
         </div>
 
@@ -388,8 +388,8 @@ function renderSummaryCards(isLoading=false){
     const cards=[
         ['عدد المشاركين', currentData.total_students, 'طالب/طالبة'],
         ['متوسط الدرجة/النسبة', `${mean.toFixed(1)}%`, 'حسب الأسئلة المتاحة'],
-        ['الوسيط (Median)', `${median.toFixed(1)}%`, 'مركز التوزيع'],
-        ['الانحراف المعياري (Std Dev)', std.toFixed(2), 'تشتت الأداء'],
+        ['الوسيط', `${median.toFixed(1)}%`, 'مركز التوزيع'],
+        ['الانحراف المعياري', std.toFixed(2), 'تشتت الأداء'],
         ['أعلى/أدنى أداء', `${best.p.toFixed(1)}% / ${worst.p.toFixed(1)}%`, 'أفضل/أضعف سؤال'],
         ['عدد الأسئلة', facts.length, 'ضمن التصفية الحالية']
     ];
@@ -401,11 +401,11 @@ function renderDataQualityPanel(){
     document.getElementById('dataQualityPanel').innerHTML = `
     <div class="quality-item"><div>الأخطاء</div><div class="quality-count">${q.errors}</div></div>
     <div class="quality-item"><div>التحذيرات</div><div class="quality-count">${q.warnings}</div></div>
-    <div class="quality-item"><div>Missing Values</div><div class="quality-count">${q.missing}</div></div>
-    <div class="quality-item"><div>Duplicates</div><div class="quality-count">${q.duplicates}</div></div>
-    <div class="quality-item"><div>Inconsistent Labels</div><div class="quality-count">${q.inconsistent}</div></div>
-    <div class="quality-item"><div>Out-of-range</div><div class="quality-count">${q.outOfRange}</div></div>`;
-    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدة (facts + dimensions) وعرض مؤشرات الجودة بشكل لحظي.';
+    <div class="quality-item"><div>القيم المفقودة</div><div class="quality-count">${q.missing}</div></div>
+    <div class="quality-item"><div>التكرار</div><div class="quality-count">${q.duplicates}</div></div>
+    <div class="quality-item"><div>اجابات غير محددة</div><div class="quality-count">${q.inconsistent}</div></div>
+    <div class="quality-item"><div>اجابات خارجية</div><div class="quality-count">${q.outOfRange}</div></div>`;
+    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدةوعرض مؤشرات الجودة بشكل لحظي.';
 }
 
 function renderGenderChart(){
@@ -621,7 +621,7 @@ function estimateDiscrimination(question, qIdx){
     const top=sectorRates.slice(0,take); const low=sectorRates.slice(-take);
     const topMean=top.reduce((a,b)=>a+b.rate,0)/top.length;
     const lowMean=low.reduce((a,b)=>a+b.rate,0)/low.length;
-    return { method:'D-index 27%', value:(topMean-lowMean)/100 };
+    return { method:' 27%', value:(topMean-lowMean)/100 };
 }
 
 function renderItemAnalysis(){
@@ -640,15 +640,15 @@ function renderItemAnalysis(){
         return itemSort.asc ? av-bv : bv-av;
     });
     table.innerHTML=`<thead><tr>
-    <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>Distractors</th></tr></thead>
+    <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>المشتتات</th></tr></thead>
     <tbody>${rows.map(r=>`<tr><td>${r.idx}</td><td>${r.question}</td><td>${r.p.toFixed(1)}%</td><td>${r.dValue===null?'—':r.dValue.toFixed(2)}</td><td>${r.dMethod}</td><td><span class="chip">${r.flag}</span></td><td><div class="distractor-bars">${r.options.slice(0,4).map(o=>`<div>${o.answer} (${o.percentage}%)<div class="d-bar"><span style="width:${o.percentage}%"></span></div></div>`).join('')}</div></td></tr>`).join('')}</tbody>`;
     table.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; itemSort={key:k,asc:itemSort.key===k?!itemSort.asc:true}; renderItemAnalysis(); });
-    const noPB = 'لا تتوفر بيانات كافية لحساب point-biserial: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
-    note.textContent = `${noPB} تم استخدام Discrimination Index (أعلى/أدنى 27%) كتقدير بديل عند توفر التوزيعات.`;
+    const noPB = 'لا تتوفر بيانات كافية لحساب: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
+    note.textContent = `${noPB} تم استخدام  (أعلى/أدنى 27%) كتقدير بديل عند توفر التوزيعات.`;
 }
 
 function renderReliability(){
-    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحساب Cronbach's Alpha. المطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
+    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحساب المطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
 }
 
 function renderInference(){
@@ -657,8 +657,8 @@ function renderInference(){
     const n=currentData.total_students||0;
     const small=n<30;
     container.innerHTML=`
-        <div class="info-note">مقارنة النوع (t-test + Cohen's d): لا تتوفر بيانات درجات رقمية فردية حسب النوع، لذلك لا يمكن إجراء الاختبار بدقة.</div>
-        <div class="info-note">مقارنة القطاعات (ANOVA + eta-squared): متاح تقدير وصفي فقط اعتماداً على نسب القطاعات داخل الأسئلة وليس درجات أفراد.</div>
+        <div class="info-note">مقارنة النوع: لا تتوفر بيانات درجات رقمية فردية حسب النوع، لذلك لا يمكن إجراء الاختبار بدقة.</div>
+        <div class="info-note">مقارنة القطاعات: متاح تقدير وصفي فقط اعتماداً على نسب القطاعات داخل الأسئلة وليس درجات أفراد.</div>
         ${small?'<div class="info-note">تحذير: حجم العينة صغير وقد يضعف الدلالة الإحصائية.</div>':''}`;
 }
 
