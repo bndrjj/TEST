@@ -179,7 +179,7 @@
         </div>
 
         <div class="chart-card" style="margin-bottom: 2rem;">
-            <h2 class="chart-title">موثوقية الاختبار (Cronbach's Alpha)</h2>
+            <h2 class="chart-title">موثوقية الاختبار</h2>
             <div id="reliabilityContainer"></div>
         </div>
 
@@ -653,7 +653,7 @@ function renderItemAnalysis(){
 }
 
 function renderReliability(){
-    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحساب Cronbach's Alpha. المطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
+    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحسابالمطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
 }
 
 function renderInference(){
@@ -662,8 +662,8 @@ function renderInference(){
     const n=currentData.total_students||0;
     const small=n<30;
     container.innerHTML=`
-        <div class="info-note">مقارنة النوع (t-test + Cohen's d): لا تتوفر بيانات درجات رقمية فردية حسب النوع، لذلك لا يمكن إجراء الاختبار بدقة.</div>
-        <div class="info-note">مقارنة القطاعات (ANOVA + eta-squared): متاح تقدير وصفي فقط اعتماداً على نسب القطاعات داخل الأسئلة وليس درجات أفراد.</div>
+        <div class="info-note">مقارنة النوع: لا تتوفر بيانات درجات رقمية فردية حسب النوع، لذلك لا يمكن إجراء الاختبار بدقة.</div>
+        <div class="info-note">مقارنة القطاعات: متاح تقدير وصفي فقط اعتماداً على نسب القطاعات داخل الأسئلة وليس درجات أفراد.</div>
         ${small?'<div class="info-note">تحذير: حجم العينة صغير وقد يضعف الدلالة الإحصائية.</div>':''}`;
 }
 
