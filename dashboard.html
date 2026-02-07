@@ -150,9 +150,9 @@
 
         <div class="section-grid">
             <div class="chart-card">
-                <h2 class="chart-title">الأداء (المادة × الصف)</h2>
+                <h2 class="chart-title">Heatmap الأداء (المادة × الصف)</h2>
                 <div id="heatmapContainer"></div>
-                <div class="info-note">عند الضغط على أي خلية يتم تطبيق التصفية على بقية اللوحة تلقائياً.</div>
+                <div class="info-note">يعرض هذا القسم فقط المادة والصف المحددين في الفلتر الأساسي أعلى الصفحة لتجنب تعارض الفلاتر.</div>
             </div>
         </div>
 
@@ -310,7 +310,6 @@ const CORRECT_ANSWERS_BY_SUBJECT={
 
 
 const unifiedModel = buildUnifiedModel(data);
-let activeHeatFilter = null;
 let itemSort = { key: 'p', asc: true };
 
 function parseSubjectGrade(label){
@@ -360,11 +359,7 @@ function validateDataModel(model){
 }
 
 function applySubjectFilter(facts){
-    const base = facts.filter(f => f.label === currentSubject);
-    if(!activeHeatFilter) return base;
-    if(activeHeatFilter.subject && activeHeatFilter.subject !== parseSubjectGrade(currentSubject).subject) return [];
-    if(activeHeatFilter.grade && activeHeatFilter.grade !== parseSubjectGrade(currentSubject).grade) return [];
-    return base;
+    return facts.filter(f => f.label === currentSubject);
 }
 
 function populateSubjects(){
@@ -406,11 +401,11 @@ function renderDataQualityPanel(){
     document.getElementById('dataQualityPanel').innerHTML = `
     <div class="quality-item"><div>الأخطاء</div><div class="quality-count">${q.errors}</div></div>
     <div class="quality-item"><div>التحذيرات</div><div class="quality-count">${q.warnings}</div></div>
-    <div class="quality-item"><div>Missing Values</div><div class="quality-count">${q.missing}</div></div>
-    <div class="quality-item"><div>Duplicates</div><div class="quality-count">${q.duplicates}</div></div>
-    <div class="quality-item"><div>Inconsistent Labels</div><div class="quality-count">${q.inconsistent}</div></div>
-    <div class="quality-item"><div>Out-of-range</div><div class="quality-count">${q.outOfRange}</div></div>`;
-    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدة (facts + dimensions) وعرض مؤشرات الجودة بشكل لحظي.';
+    <div class="quality-item"><div>القيم المفقودة</div><div class="quality-count">${q.missing}</div></div>
+    <div class="quality-item"><div>التكرار</div><div class="quality-count">${q.duplicates}</div></div>
+    <div class="quality-item"><div>اجابات غير محددة</div><div class="quality-count">${q.inconsistent}</div></div>
+    <div class="quality-item"><div>اجابات خارجية</div><div class="quality-count">${q.outOfRange}</div></div>`;
+    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدةوعرض مؤشرات الجودة بشكل لحظي.';
 }
 
 function renderGenderChart(){
@@ -648,12 +643,12 @@ function renderItemAnalysis(){
     <th data-k="idx">#</th><th data-k="question">السؤال</th><th data-k="p">P الصعوبة</th><th data-k="dValue">التمييز</th><th>الطريقة</th><th>حالة السؤال</th><th>المشتتات</th></tr></thead>
     <tbody>${rows.map(r=>`<tr><td>${r.idx}</td><td>${r.question}</td><td>${r.p.toFixed(1)}%</td><td>${r.dValue===null?'—':r.dValue.toFixed(2)}</td><td>${r.dMethod}</td><td><span class="chip">${r.flag}</span></td><td><div class="distractor-bars">${r.options.slice(0,4).map(o=>`<div>${o.answer} (${o.percentage}%)<div class="d-bar"><span style="width:${o.percentage}%"></span></div></div>`).join('')}</div></td></tr>`).join('')}</tbody>`;
     table.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; itemSort={key:k,asc:itemSort.key===k?!itemSort.asc:true}; renderItemAnalysis(); });
-    const noPB = 'لا تتوفر بيانات كافية لحساب point-biserial: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
-    note.textContent = `${noPB} تم استخدام Discrimination Index (أعلى/أدنى 27%) كتقدير بديل عند توفر التوزيعات.`;
+    const noPB = 'لا تتوفر بيانات كافية لحساب: نحتاج مصفوفة إجابات طالب-بند + الدرجة الكلية لكل طالب.';
+    note.textContent = `${noPB} تم استخدام  (أعلى/أدنى 27%) كتقدير بديل عند توفر التوزيعات.`;
 }
 
 function renderReliability(){
-    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحسابالمطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
+    document.getElementById('reliabilityContainer').innerHTML = `<div class="info-note">لا تتوفر بيانات كافية لحساب المطلوب: مصفوفة بنود لكل طالب (0/1 أو درجات البنود) لنفس المادة/الصف.</div>`;
 }
 
 function renderInference(){
@@ -669,13 +664,11 @@ function renderInference(){
 
 function renderHeatmap(){
     const c=document.getElementById('heatmapContainer');
-    const labels=Object.keys(data);
-    const dim={};
-    labels.forEach(l=>{ const p=parseSubjectGrade(l); (dim[p.subject]??={}); const facts=unifiedModel.facts.filter(f=>f.label===l); dim[p.subject][p.grade]=facts.length?facts.reduce((a,b)=>a+b.p,0)/facts.length:0; });
-    const grades=[...new Set(Object.values(dim).flatMap(x=>Object.keys(x)))];
+    const selected=parseSubjectGrade(currentSubject);
+    const facts=unifiedModel.facts.filter(f=>f.label===currentSubject);
+    const value=facts.length ? facts.reduce((a,b)=>a+b.p,0)/facts.length : 0;
     const getColor=v=>`hsl(${180-(v*1.2)},55%,45%)`;
-    c.innerHTML='<div class="heatmap-grid">'+Object.entries(dim).map(([subject,row])=>`<div class="heat-row"><div class="heat-label">${subject}</div>${grades.map(g=>{ const v=row[g]??0; const active=activeHeatFilter && activeHeatFilter.subject===subject && activeHeatFilter.grade===g; return `<button class="heat-cell ${active?'active':''}" style="background:${getColor(v)}" data-subject="${subject}" data-grade="${g}">${g}<br>${v.toFixed(1)}%</button>`; }).join('')}</div>`).join('')+'</div>';
-    c.querySelectorAll('.heat-cell').forEach(btn=>btn.onclick=()=>{ const same = activeHeatFilter && activeHeatFilter.subject===btn.dataset.subject && activeHeatFilter.grade===btn.dataset.grade; activeHeatFilter = same ? null : {subject:btn.dataset.subject,grade:btn.dataset.grade}; updateDashboard(); });
+    c.innerHTML=`<div class="heatmap-grid"><div class="heat-row"><div class="heat-label">${selected.subject}</div><div class="heat-cell active" style="background:${getColor(value)}; cursor:default;">${selected.grade}<br>${value.toFixed(1)}%</div></div></div>`;
 }
 
 function updateDashboard(withLoader=false){
