@@ -329,13 +329,15 @@ function buildUnifiedModel(raw){
         (payload.questions || []).forEach((q, idx) => {
             const options = q.options || [];
             const correctAnswer = (CORRECT_ANSWERS_BY_SUBJECT[label] || [])[idx];
-            const correctOption = options.find(o => o.answer === correctAnswer);
+            const normalizedCorrect = String(correctAnswer || '').trim();
+            const correctOption = options.find(o => String(o.answer || '').trim() === normalizedCorrect);
             facts.push({
                 label, subject:d.subject, grade:d.grade, questionIndex: idx + 1, question: q.question,
                 participants: Number(q.total || payload.total_students || 0),
                 optionsCount: options.length,
                 correctAnswer,
-                p: Number(correctOption?.percentage || 0),
+                hasMatchedCorrectOption: Boolean(correctOption),
+                p: Number(correctOption?.percentage ?? NaN),
                 options
             });
         });
@@ -344,18 +346,46 @@ function buildUnifiedModel(raw){
 }
 
 function validateDataModel(model){
-    let missing=0, duplicates=0, inconsistent=0, outOfRange=0;
+    let missing=0, duplicates=0, inconsistent=0, outOfRange=0, matchedCorrect=0;
+    let participantsTotal = 0;
     const seen = new Set();
+
     model.facts.forEach(f=>{
-        if(!f.question || !f.participants) missing++;
-        const key = `${f.label}::${f.question}`;
+        participantsTotal += Number(f.participants || 0);
+        if(!f.question || !Number.isFinite(f.participants) || f.participants <= 0 || !f.options.length) missing++;
+
+        const key = `${f.label}::${String(f.question || '').trim()}`;
         if(seen.has(key)) duplicates++;
         seen.add(key);
+
         const sum = f.options.reduce((a,o)=>a+Number(o.percentage||0),0);
-        if(f.options.length && Math.abs(sum-100)>1.5) inconsistent++;
-        if(f.p<0 || f.p>100) outOfRange++;
+        const hasOutOfRangeOption = f.options.some(o => {
+            const percentage = Number(o.percentage);
+            return Number.isFinite(percentage) && (percentage < 0 || percentage > 100);
+        });
+
+        if(f.hasMatchedCorrectOption) matchedCorrect++;
+        if((f.options.length && Math.abs(sum-100)>1.5) || !f.correctAnswer || !f.hasMatchedCorrectOption) inconsistent++;
+        if((Number.isFinite(f.p) && (f.p<0 || f.p>100)) || hasOutOfRangeOption) outOfRange++;
     });
-    return {missing, duplicates, inconsistent, outOfRange, warnings: missing+inconsistent, errors: duplicates+outOfRange};
+
+    const checkedRecords = model.facts.length;
+    const consistencyRate = checkedRecords ? ((checkedRecords - inconsistent) / checkedRecords) * 100 : 0;
+    const matchedRate = checkedRecords ? (matchedCorrect / checkedRecords) * 100 : 0;
+
+    return {
+        checkedRecords,
+        participantsTotal,
+        matchedCorrect,
+        matchedRate,
+        consistencyRate,
+        missing,
+        duplicates,
+        inconsistent,
+        outOfRange,
+        warnings: missing+inconsistent,
+        errors: duplicates+outOfRange
+    };
 }
 
 function applySubjectFilter(facts){
@@ -399,13 +429,13 @@ function renderSummaryCards(isLoading=false){
 function renderDataQualityPanel(){
     const q = validateDataModel(unifiedModel);
     document.getElementById('dataQualityPanel').innerHTML = `
-    <div class="quality-item"><div>الأخطاء</div><div class="quality-count">${q.errors}</div></div>
+    <div class="quality-item"><div>السجلات المفحوصة</div><div class="quality-count">${q.checkedRecords}</div></div>
+    <div class="quality-item"><div>إجمالي المشاركات</div><div class="quality-count">${q.participantsTotal.toLocaleString('ar-SA')}</div></div>
+    <div class="quality-item"><div>اتساق السجلات</div><div class="quality-count">${q.consistencyRate.toFixed(1)}%</div></div>
+    <div class="quality-item"><div>تطابق مفتاح الإجابات</div><div class="quality-count">${q.matchedRate.toFixed(1)}%</div></div>
     <div class="quality-item"><div>التحذيرات</div><div class="quality-count">${q.warnings}</div></div>
-    <div class="quality-item"><div>القيم المفقودة</div><div class="quality-count">${q.missing}</div></div>
-    <div class="quality-item"><div>التكرار</div><div class="quality-count">${q.duplicates}</div></div>
-    <div class="quality-item"><div>اجابات غير محددة</div><div class="quality-count">${q.inconsistent}</div></div>
-    <div class="quality-item"><div>اجابات خارجية</div><div class="quality-count">${q.outOfRange}</div></div>`;
-    document.getElementById('dataQualityNotes').textContent = 'تم التحقق من البنية الموحدةوعرض مؤشرات الجودة بشكل لحظي.';
+    <div class="quality-item"><div>الأخطاء</div><div class="quality-count">${q.errors}</div></div>`;
+    document.getElementById('dataQualityNotes').textContent = `القيم تُحدَّث لحظياً من إجمالي ${q.checkedRecords} سجل؛ التحذيرات: ${q.warnings}، الأخطاء: ${q.errors}.`;
 }
 
 function renderGenderChart(){
